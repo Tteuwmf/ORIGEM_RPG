@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ORIGEM - Ficha Digital</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        horrorBlack: '#0a0a0a',
+                        horrorGray: '#1a1a1a',
+                        blood: '#7a0010',
+                        rust: '#a3431a',
+                        mentalPurple: '#3b1d54',
+                        spectralWhite: '#e2e8f0'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Courier New', Courier, monospace; }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #e2e8f0;
+            cursor: pointer;
+            border-radius: 50%;
+            border: 2px solid #3b1d54;
+        }
+    </style>
+</head>
+<body class="bg-horrorBlack text-stone-300 min-h-screen p-4 selection:bg-blood selection:text-white">
+
+<div id="app" class="max-w-6xl mx-auto space-y-6" v-cloak>
+    
+    <header class="bg-horrorGray border border-stone-800 p-4 rounded flex flex-wrap justify-between items-center gap-4 shadow-xl">
+        <div class="flex items-center gap-3 flex-1 min-w-[280px]">
+            <label class="text-xs text-rust font-bold uppercase tracking-wider block">Sobrevivente:</label>
+            <input type="text" v-model="char.name" placeholder="Nome do Personagem..." 
+                   class="bg-transparent border-b border-stone-700 focus:border-blood outline-none text-xl font-bold text-stone-100 w-full px-2 py-1">
+            
+            <button @click="showInfoModal = !showInfoModal" class="text-stone-500 hover:text-stone-300 text-xl font-bold px-2">
+                &#8943;
+            </button>
+        </div>
+
+        <div class="flex items-center gap-4">
+            <span class="text-xs text-stone-500">ORIGEM v1.0</span>
+            <button @click="showConfigPanel = !showConfigPanel" class="bg-stone-900 border border-stone-700 hover:bg-stone-800 p-2 rounded text-stone-400">
+                &#9881;
+            </button>
+        </div>
+    </header>
+
+    <div v-if="showInfoModal" class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+        <div class="bg-horrorGray border border-stone-800 p-6 rounded max-w-sm w-full space-y-4">
+            <h3 class="text-rust font-bold uppercase border-b border-stone-800 pb-2">Detalhes do Sobrevivente</h3>
+            <div class="space-y-2 text-sm">
+                <div><label class="text-stone-500">Idade:</label> <input type="text" v-model="char.age" class="bg-stone-950 border border-stone-800 rounded px-2 py-1 w-full text-stone-200"></div>
+                <div><label class="text-stone-500">Altura:</label> <input type="text" v-model="char.height" class="bg-stone-950 border border-stone-800 rounded px-2 py-1 w-full text-stone-200"></div>
+                <div><label class="text-stone-500">Sexo:</label> <input type="text" v-model="char.gender" class="bg-stone-950 border border-stone-800 rounded px-2 py-1 w-full text-stone-200"></div>
+                <div><label class="text-stone-500">Profissão:</label> <input type="text" v-model="char.profession" class="bg-stone-950 border border-stone-800 rounded px-2 py-1 w-full text-stone-200"></div>
+                <div><label class="text-stone-500">Personalidade:</label> <textarea v-model="char.personality" class="bg-stone-950 border border-stone-800 rounded px-2 py-1 w-full text-stone-200 h-20 resize-none"></textarea></div>
+            </div>
+            <button @click="showInfoModal = false" class="w-full bg-stone-800 hover:bg-stone-700 text-xs py-2 uppercase font-bold tracking-wider rounded text-stone-300">Fechar</button>
+        </div>
+    </div>
+
+    <div v-if="showConfigPanel" class="fixed right-0 top-0 h-full w-80 bg-horrorGray border-l border-stone-800 p-6 z-50 shadow-2xl space-y-6 flex flex-col justify-between">
+        <div class="space-y-4">
+            <div class="flex justify-between items-center border-b border-stone-800 pb-2">
+                <h3 class="text-stone-400 font-bold uppercase">Configurações</h3>
+                <button @click="showConfigPanel = false" class="text-stone-500 hover:text-stone-300">&times;</button>
+            </div>
+            <p class="text-xs text-stone-500">Gerencie os dados brutos da sua ficha digital local.</p>
+            <button @click="manualSave" class="w-full bg-stone-900 border border-stone-700 hover:bg-stone-800 py-2 rounded text-sm text-stone-300 uppercase tracking-wide">Salvar Manual</button>
+            <button @click="exportFicha" class="w-full bg-stone-900 border border-stone-700 hover:bg-stone-800 py-2 rounded text-sm text-stone-300 uppercase tracking-wide">Exportar Ficha (JSON)</button>
+            
+            <div class="border-t border-stone-800 pt-4">
+                <label class="text-xs text-stone-500 uppercase block mb-2">Importar Ficha</label>
+                <input type="file" @change="importFicha" class="text-xs text-stone-400 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-stone-800 file:text-stone-300 hover:file:bg-stone-700">
+            </div>
+        </div>
+        <p class="text-[10px] text-stone-600 text-center">ORIGEM RPG - Sistema de Horror</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <div class="lg:col-span-12 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-horrorGray border border-stone-800 p-4 rounded space-y-4 shadow-lg relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-1 h-full bg-mentalPurple"></div>
+                <div class="flex justify-between items-center pl-2">
+                    <span class="text-sm font-bold text-purple-400 uppercase tracking-wider">Painel Mental</span>
+                    <div class="text-xs text-stone-400 space-x-2">
+                        <span>Alma Máx: <input type="number" v-model.number="maxAlma" class="w-10 bg-transparent text-center border-b border-stone-700 outline-none"></span>
+                        <span class="font-bold text-stone-200">Atual: <input type="number" v-model.number="alma" class="w-10 bg-transparent text-center border-b border-stone-600 font-bold outline-none text-purple-300"></span>
+                    </div>
+                </div>
+                
+                <div class="space-y-1 pl-2">
+                    <div class="flex justify-between text-xs font-mono text-purple-400">
+                        <span>PÂNICO (PP): {{ pp }}</span>
+                        <span>INSTINTO (PI): {{ pi }}</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-purple-500">☽</span>
+                        <input type="range" min="0" :max="10" :value="pi" @input="onSliderChange" class="w-full accent-mentalPurple bg-stone-950 h-2 rounded outline-none appearance-none">
+                        <span class="text-orange-500">☼</span>
+                    </div>
+                    <div class="text-[10px] text-stone-500 italic text-center">
+                        Máximo de Instinto permitido por sua Alma atual: {{ maxPI }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-horrorGray border border-stone-800 p-4 rounded space-y-4 shadow-lg relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-1 h-full bg-blood"></div>
+                <div class="flex justify-between items-center pl-2">
+                    <span class="text-sm font-bold text-red-500 uppercase tracking-wider">Vitalidade Física</span>
+                    <div class="text-sm font-mono">
+                        <input type="number" v-model.number="pv" class="w-10 bg-transparent text-right text-stone-100 font-bold border-b border-stone-700 outline-none text-red-400"> / 
+                        <input type="number" v-model.number="maxPV" class="w-10 bg-transparent text-stone-500 border-b border-stone-800 outline-none"> <span class="text-xs text-stone-500">PV</span>
+                    </div>
+                </div>
+                <div class="w-full bg-stone-950 h-4 rounded overflow-hidden border border-stone-800 pl-2">
+                    <div class="bg-gradient-to-r from-blood to-red-800 h-full transition-all duration-300" :style="{ width: (pv / maxPV * 100) + '%' }"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="lg:col-span-8 bg-horrorGray border border-stone-800 p-6 rounded grid grid-cols-1 md:grid-cols-12 gap-4 relative shadow-2xl">
+            
+            <div class="md:col-span-3 flex flex-col justify-between gap-4 border-r border-stone-800/50 pr-2">
+                <div class="space-y-4">
+                    <a href="#pericias-section" class="block w-full text-center bg-stone-900 border border-stone-700 hover:bg-stone-800 text-xs py-2 uppercase font-mono tracking-wider rounded text-stone-400">
+                        &darr; Perícias
+                    </a>
+                    <a href="#habilidades-section" class="block w-full text-center bg-stone-900 border border-stone-700 hover:bg-stone-800 text-xs py-2 uppercase font-mono tracking-wider rounded text-stone-400">
+                        &darr; Habilidades
+                    </a>
+
+                    <div class="bg-stone-950 p-3 rounded border border-stone-900 space-y-1">
+                        <span class="text-[10px] uppercase text-stone-500 block">MOV (Movimento)</span>
+                        <div class="text-xl font-bold font-mono text-stone-200">{{ 5 + parseInt(attributes.DES || 0) }}</div>
+                        <span class="text-[9px] text-stone-600 block">(5 + DES)</span>
+                    </div>
+
+                    <div class="bg-stone-950 p-3 rounded border border-stone-900 space-y-1">
+                        <span class="text-[10px] uppercase text-stone-500 block">TAM (Tamanho)</span>
+                        <div class="text-xl font-bold font-mono text-stone-200">{{ Math.floor((parseInt(attributes.FOR || 0) + parseInt(attributes.VIG || 0)) / 2) || 1 }}</div>
+                        <span class="text-[9px] text-stone-600 block">((FOR + VIG) / 2)</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="md:col-span-9 flex flex-col items-center justify-center py-4 relative">
+                
+                <div class="w-full max-w-sm grid grid-cols-3 gap-2 mb-6 z-10 text-center">
+                    <div class="bg-stone-950 p-2 rounded border border-stone-800">
+                        <label class="text-[10px] text-stone-500 block uppercase">FOR</label>
+                        <input type="number" v-model.number="attributes.FOR" class="w-full bg-transparent text-center text-lg font-bold outline-none text-stone-200">
+                    </div>
+                    <div class="bg-stone-950 p-2 rounded border border-stone-800">
+                        <label class="text-[10px] text-stone-500 block uppercase">VIG</label>
+                        <input type="number" v-model.number="attributes.VIG" class="w-full bg-transparent text-center text-lg font-bold outline-none text-stone-200">
+                    </div>
+                    <div class="bg-stone-950 p-2 rounded border border-stone-800">
+                        <label class="text-[10px] text-stone-500 block uppercase">DES</label>
+                        <input type="number" v-model.number="attributes.DES" class="w-full bg-transparent text-center text-lg font-bold outline-none text-stone-200">
+                    </div>
+                    <div class="bg-stone-950 p-2 rounded border border-stone-800 col-span-1">
+                        <label class="text-[10px] text-stone-500 block uppercase">INT</label>
+                        <input type="number" v-model.number="attributes.INT" class="w-full bg-transparent text-center text-lg font-bold outline-none text-stone-200">
+                    </div>
+                    <div class="col-span-1"></div>
+                    <div class="bg-stone-950 p-2 rounded border border-stone-800 col-span-1">
+                        <label class="text-[10px] text-stone-500 block uppercase">CAR</label>
+                        <input type="number" v-model.number="attributes.CAR" class="w-full bg-transparent text-center text-lg font-bold outline-none text-stone-200">
+                    </div>
+                </div>
+
+                <div class="w-full max-w-xs flex flex-col gap-2 items-center">
+                    <button @click="selectPart('cabeca')" :class="getPartClass('cabeca')" class="w-24 h-16 rounded flex flex-col items-center justify-center border transition-all">
+                        <span class="text-xs font-bold">Cabeça</span>
+                        <span class="text-[10px] opacity-80">{{ bodyParts.cabeca.pc }}/10 PC</span>
+                    </button>
+
+                    <div class="w-full flex justify-between items-stretch gap-2 px-4">
+                        <button @click="selectPart('bracoEsq')" :class="getPartClass('bracoEsq')" class="w-16 h-36 rounded flex flex-col items-center justify-center border transition-all">
+                            <span class="text-xs font-bold rotate-90 md:rotate-0">B. Esq</span>
+                            <span class="text-[10px] opacity-80">{{ bodyParts.bracoEsq.pc }}/10</span>
+                        </button>
+
+                        <button @click="selectPart('dorso')" :class="getPartClass('dorso')" class="flex-1 h-36 rounded flex flex-col items-center justify-center border transition-all">
+                            <span class="text-sm font-bold">Dorso</span>
+                            <span class="text-xs opacity-80">{{ bodyParts.dorso.pc }}/10 PC</span>
+                        </button>
+
+                        <button @click="selectPart('bracoDir')" :class="getPartClass('bracoDir')" class="w-16 h-36 rounded flex flex-col items-center justify-center border transition-all">
+                            <span class="text-xs font-bold rotate-90 md:rotate-0">B. Dir</span>
+                            <span class="text-[10px] opacity-80">{{ bodyParts.bracoDir.pc }}/10</span>
+                        </button>
+                    </div>
+
+                    <button @click="selectPart('pernas')" :class="getPartClass('pernas')" class="w-32 h-24 rounded flex flex-col items-center justify-center border transition-all">
+                        <span class="text-xs font-bold">Pernas</span>
+                        <span class="text-[10px] opacity-80">{{ bodyParts.pernas.pc }}/10 PC</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="lg:col-span-4 flex flex-col gap-4">
+            
+            <div class="bg-horrorGray border border-stone-800 p-4 rounded grid grid-cols-2 gap-4 items-center shadow-lg">
+                <div>
+                    <button @click="passarTurno" class="w-full bg-gradient-to-b from-stone-800 to-stone-900 hover:from-stone-700 hover:to-stone-800 border border-stone-600 text-stone-200 text-xs font-bold py-3 px-2 rounded tracking-wider uppercase shadow flex flex-col items-center justify-center gap-1">
+                        <span>Passar Turno</span>
+                        <span class="text-[9px] text-rust lowercase font-normal font-mono">Processar efeitos</span>
+                    </button>
+                </div>
+                <div class="bg-stone-950 p-2 rounded border border-stone-800 flex flex-col items-center justify-center relative overflow-hidden">
+                    <span class="text-[10px] uppercase text-stone-500 block z-10">DEF (Defesa)</span>
+                    <div class="text-2xl font-bold font-mono text-stone-200 z-10">{{ 10 + parseInt(attributes.DES || 0) - (Math.floor((parseInt(attributes.FOR || 0) + parseInt(attributes.VIG || 0)) / 2) || 1) }}</div>
+                    <span class="text-[8px] text-stone-600 z-10 block">(10 + DES - TAM)</span>
+                </div>
+            </div>
+
+            <div class="bg-horrorGray border border-stone-800 p-4 rounded shadow-xl flex-1 flex flex-col justify-between space-y-4">
+                <div class="space-y-4">
+                    <div class="border-b border-stone-800 pb-2">
+                        <h3 class="text-sm font-bold text-rust uppercase tracking-wider">Membro: {{ activePart.name }}</h3>
+                        <span class="text-xs" :class="getStatusColor(activePart.pc)">Estado: {{ getStatusText(activePart.pc) }}</span>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2 text-xs">
+                        <div>
+                            <label class="text-stone-500 block mb-1">PC Atual:</label>
+                            <input type="number" min="0" max="10" v-model.number="activePart.pc" class="w-full bg-stone-950 border border-stone-800 rounded px-2 py-1 text-stone-100 font-bold">
+                        </div>
+                        <div>
+                            <label class="text-stone-500 block mb-1">Resistência Base:</label>
+                            <div class="w-full bg-stone-900 border border-stone-800 rounded px-2 py-1 text-stone-400 font-mono">+{{ activePart.resist }}</div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3 bg-stone-950/50 p-3 rounded border border-stone-900 text-xs">
+                        <span class="text-[10px] uppercase text-stone-400 font-bold tracking-wider block">Taxas por Turno (Modificadores)</span>
+                        <div>
+                            <label class="text-stone-500 flex justify-between">
+                                <span>Sangramento/Turno:</span>
+                                <span class="text-red-400 font-mono">-{{ activePart.bleedRate }} PC</span>
+                            </label>
+                            <input type="range" min="0" max="2" step="0.5" v-model.number="activePart.bleedRate" class="w-full accent-blood bg-stone-900 h-1 rounded outline-none appearance-none mt-1">
+                        </div>
+                        <div>
+                            <label class="text-stone-500 flex justify-between">
+                                <span>Regeneração/Turno:</span>
+                                <span class="text-emerald-400 font-mono">+{{ activePart.regenRate }} PC</span>
+                            </label>
+                            <input type="range" min="0" max="2" step="0.5" v-model.number="activePart.regenRate" class="w-full accent-emerald-700 bg-stone-900 h-1 rounded outline-none appearance-none mt-1">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2 text-[11px] bg-stone-950 p-2 rounded border border-stone-900">
+                        <div>
+                            <span class="text-stone-600 block uppercase">Sangue Perdido:</span>
+                            <span class="font-mono text-red-500/80">{{ activePart.bleedAcc }} PC</span>
+                        </div>
+                        <div>
+                            <span class="text-stone-600 block uppercase">Regen. Total:</span>
+                            <span class="font-mono text-emerald-500/80">{{ activePart.regenAcc }} PC</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="text-[11px] text-stone-500 uppercase block mb-1">Efeitos e Condições Ativas:</label>
+                    <input type="text" v-model="activePart.effects" placeholder="Ex: Amputado, dilacerado..." class="w-full bg-stone-950 border border-stone-800 rounded px-2 py-1 text-xs text-stone-300 outline-none focus:border-rust">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <hr class="border-stone-900 my-6">
+
+    <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+        
+        <section id="pericias-section" class="md:col-span-7 bg-horrorGray border border-stone-800 p-4 rounded shadow-xl space-y-4">
+            <div class="border-b border-stone-800 pb-2">
+                <h2 class="text-sm font-bold text-stone-200 uppercase tracking-wider">Lista de Perícias</h2>
+                <p class="text-[11px] text-stone-500">Clique no ícone para ciclar o nível de treino (Nenhum / +2 Improvisado / +5 Completo)</p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 overflow-y-auto max-h-[500px] pr-1">
+                <div v-for="skill in skills" :key="skill.name" class="bg-stone-950 p-2 rounded border border-stone-900 flex justify-between items-center text-xs">
+                    <div>
+                        <span class="font-bold text-stone-300 block">{{ skill.name }}</span>
+                        <span class="text-[9px] text-stone-600 uppercase">Base sugerida: {{ skill.attr }}</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="font-mono font-bold w-6 text-center" :class="skill.level > 0 ? 'text-rust' : 'text-stone-600'">
+                            +{{ skill.level === 2 ? 5 : (skill.level === 1 ? 2 : 0) }}
+                        </span>
+                        <button @click="cycleSkill(skill)" class="w-8 h-8 rounded border flex items-center justify-center font-bold font-mono transition-colors"
+                                :class="getSkillBtnClass(skill.level)">
+                            {{ skill.level === 2 ? 'C' : (skill.level === 1 ? 'I' : '•') }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="habilidades-section" class="md:col-span-5 bg-horrorGray border border-stone-800 p-4 rounded shadow-xl flex flex-col justify-between space-y-4">
+            <div class="border-b border-stone-800 pb-2">
+                <h2 class="text-sm font-bold text-stone-200 uppercase tracking-wider">Árvore de Habilidades</h2>
+                <p class="text-[11px] text-stone-500">Espaço de progressão reservado conforme especificação técnica 1.0</p>
+            </div>
+
+            <div class="flex-1 min-h-[250px] border border-dashed border-stone-800 rounded flex flex-col items-center justify-center text-center p-6 bg-stone-950/30 relative">
+                <div class="text-stone-700 font-mono text-xs max-w-xs space-y-2">
+                    <p class="text-stone-600 text-lg">🕀</p>
+                    <p class="italic">"As extensões da matéria da COISA estão sob o solo, no interior das árvores... aguardando o despertar do seu Arquétipo."</p>
+                    <p class="text-[10px] text-rust uppercase tracking-widest pt-4">[ Espaço Reservado para Versão 1.1 ]</p>
+                </div>
+            </div>
+            
+            <div class="text-[10px] text-stone-600 italic text-right">
+                O custo de habilidades consome PP e PI estruturalmente.
+            </div>
+        </section>
+    </div>
+
+</div>
+
+<script>
+    const { createApp, ref, computed, watch, onMounted } = Vue;
+
+    createApp({
+        setup() {
+            // Informações gerais do personagem
+            const char = ref({
+                name: '', age: '', height: '', gender: '', profession: '', personality: ''
+            });
+
+            // Visibilidade de painéis
+            const showInfoModal = ref(false);
+            const showConfigPanel = ref(false);
+
+            // Alma e os Polos Mentais (PI/PP)
+            const alma = ref(10);
+            const maxAlma = ref(10);
+            const pi = ref(5); // Instinto
+            const pp = computed(() => 10 - pi.value); // Pânico é sempre o complemento para fechar 10
+
+            // Vitalidade Base
+            const pv = ref(10);
+            const maxPV = ref(10);
+
+            // Atributos Principais (PA)
+            const attributes = ref({ FOR: 1, DES: 1, INT: 1, CAR: 1, VIG: 1 });
+
+            // Estrutura das Regiões do Corpo (PC)
+            const bodyParts = ref({
+                cabeca: { name: 'Cabeça', pc: 10, max: 10, resist: 2, regenRate: 0, bleedRate: 0, bleedAcc: 0, regenAcc: 0, effects: '' },
+                dorso: { name: 'Dorso', pc: 10, max: 10, resist: 5, regenRate: 0, bleedRate: 0, bleedAcc: 0, regenAcc: 0, effects: '' },
+                bracoEsq: { name: 'Braço Esquerdo', pc: 10, max: 10, resist: 0, regenRate: 0, bleedRate: 0, bleedAcc: 0, regenAcc: 0, effects: '' },
+                bracoDir: { name: 'Braço Direito', pc: 10, max: 10, resist: 0, regenRate: 0, bleedRate: 0, bleedAcc: 0, regenAcc: 0, effects: '' },
+                pernas: { name: 'Pernas', pc: 10, max: 10, resist: 3, regenRate: 0, bleedRate: 0, bleedAcc: 0, regenAcc: 0, effects: '' }
+            });
+
+            const selectedPartKey = ref('cabeca');
+            const activePart = computed(() => bodyParts.value[selectedPartKey.value]);
+
+            // Regra de Limitação de Instinto por Alma
+            const maxPI = computed(() => {
+                const perdaAlma = 10 - alma.value;
+                const reducaoMax = Math.floor(perdaAlma / 2);
+                return Math.max(0, 10 - reducaoMax);
+            });
+
+            // Observador para ajustar Instinto caso a Alma caia demais
+            watch(maxPI, (newMax) => {
+                if (pi.value > newMax) {
+                    pi.value = newMax;
+                }
+            });
+
+            // Atualização manual do slider respeitando os limites da alma
+            const onSliderChange = (e) => {
+                let targetVal = parseInt(e.target.value);
+                if (targetVal > maxPI.value) {
+                    targetVal = maxPI.value;
+                }
+                pi.value = targetVal;
+            };
+
+            const selectPart = (key) => { selectedPartKey.value = key; };
+
+            // Cálculo dos Estados de cada Membro
+            const getStatusText = (pc) => {
+                if (pc >= 6) return 'Saudável';
+                if (pc >= 1) return 'Danificado';
+                return 'Morto';
+            };
+
+            const getStatusColor = (pc) => {
+                if (pc >= 6) return 'text-emerald-500 font-bold';
+                if (pc >= 1) return 'text-orange-500 font-bold';
+                return 'text-red-600 font-bold tracking-widest animate-pulse';
+            };
+
+            // Estilos visuais dos botões anatômicos baseados no estado
+            const getPartClass = (key) => {
+                const pc = bodyParts.value[key].pc;
+                const isSelected = selectedPartKey.value === key;
+                let bg = 'bg-stone-900 border-stone-700 hover:bg-stone-800 text-stone-200';
+                
+                //if (pc <= 10 && pc >=6) bg = 'bg-green-950/40 border-green-800 text-green-200';
+                if (pc >= 1 && pc <= 5) bg = 'bg-orange-950/40 border-orange-800 text-orange-200';
+                if (pc === 0) bg = 'bg-blood/30 border-red-700 text-red-500';
+                
+                return `${bg} ${isSelected ? 'ring-2 ring-rust border-transparent scale-105' : ''}`;
+            };
+
+            // Processamento Mecânico de Turnos (Sangramento e Regeneração)
+            const passarTurno = () => {
+                Object.keys(bodyParts.value).forEach(key => {
+                    const part = bodyParts.value[key];
+                    
+                    // Aplicar Sangramento
+                    if (part.bleedRate > 0 && part.pc > 0) {
+                        let actualBleed = Math.min(part.bleedRate, part.pc);
+                        part.pc = parseFloat((part.pc - actualBleed).toFixed(1));
+                        part.bleedAcc = parseFloat((part.bleedAcc + actualBleed).toFixed(1));
+                    }
+                    
+                    // Aplicar Regeneração (Apenas se não estiver morto ou se permitido pelo mestre)
+                    if (part.regenRate > 0 && part.pc < part.max && part.pc > 0) {
+                        let actualRegen = Math.min(part.regenRate, part.max - part.pc);
+                        part.pc = parseFloat((part.pc + actualRegen).toFixed(1));
+                        part.regenAcc = parseFloat((part.regenAcc + actualRegen).toFixed(1));
+                    }
+                });
+                saveDataLocally();
+            };
+
+            // Lista de Perícias Obrigatórias do PDF
+            const skills = ref([
+                { name: 'Acrobacia', attr: 'Destreza', level: 0 },
+                { name: 'Furtividade', attr: 'Destreza', level: 0 },
+                { name: 'Gatunagem', attr: 'Destreza', level: 0 },
+                { name: 'Iniciativa', attr: 'Destreza', level: 0 },
+                { name: 'Reflexos', attr: 'Destreza', level: 0 },
+                { name: 'Atletismo', attr: 'Força', level: 0 },
+                { name: 'Luta', attr: 'Força', level: 0 },
+                { name: 'Fortitude', attr: 'Vigor', level: 0 },
+                { name: 'Atualidades', attr: 'Intelecto', level: 0 },
+                { name: 'Ciência', attr: 'Intelecto', level: 0 },
+                { name: 'Engenharia', attr: 'Intelecto', level: 0 },
+                { name: 'Investigação', attr: 'Intelecto', level: 0 },
+                { name: 'Medicina', attr: 'Intelecto', level: 0 },
+                { name: 'Percepção', attr: 'Intelecto', level: 0 },
+                { name: 'Pilotagem', attr: 'Intelecto', level: 0 },
+                { name: 'Tecnologia', attr: 'Intelecto', level: 0 },
+                { name: 'Adestramento', attr: 'Carisma', level: 0 },
+                { name: 'Artes', attr: 'Carisma', level: 0 },
+                { name: 'Diplomacia', attr: 'Carisma', level: 0 },
+                { name: 'Enganação', attr: 'Carisma', level: 0 },
+                { name: 'Intuição', attr: 'Intelecto', level: 0 },
+                { name: 'Pontaria', attr: 'Intelecto', level: 0 },
+                { name: 'Religião', attr: 'Intelecto', level: 0 }
+            ]);
+
+            const cycleSkill = (skill) => {
+                skill.level = (skill.level + 1) % 3; // 0: Sem Treino, 1: Improvisado, 2: Completo
+            };
+
+            const getSkillBtnClass = (level) => {
+                if (level === 2) return 'bg-rust border-orange-500 text-stone-100';
+                if (level === 1) return 'bg-stone-800 border-stone-600 text-orange-400';
+                return 'bg-stone-950 border-stone-800 text-stone-600';
+            };
+
+            // PERSISTÊNCIA E ACIONAMENTO AUTOMÁTICO (LocalStorage)
+            const gatherData = () => {
+                return JSON.stringify({
+                    char: char.value, alma: alma.value, maxAlma: maxAlma.value, pi: pi.value,
+                    pv: pv.value, maxPV: maxPV.value, attributes: attributes.value,
+                    bodyParts: bodyParts.value, skills: skills.value
+                });
+            };
+
+            const saveDataLocally = () => {
+                localStorage.setItem('origem_rpg_ficha', gatherData());
+            };
+
+            // Auto-salvamento observando mudanças estruturais profundas nas instâncias
+            watch([char, alma, maxAlma, pi, pv, maxPV, attributes, bodyParts, skills], () => {
+                saveDataLocally();
+            }, { deep: true });
+
+            const manualSave = () => {
+                saveDataLocally();
+                alert('Ficha salva localmente com sucesso!');
+            };
+
+            const exportFicha = () => {
+                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(gatherData());
+                const downloadAnchor = document.createElement('a');
+                downloadAnchor.setAttribute("href", dataStr);
+                downloadAnchor.setAttribute("download", `origem_${char.value.name || 'sobrevivente'}.json`);
+                document.body.appendChild(downloadAnchor);
+                downloadAnchor.click();
+                downloadAnchor.remove();
+            };
+
+            const importFicha = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (evt) => {
+                    try {
+                        const parsed = JSON.parse(evt.target.result);
+                        if (parsed.char) char.value = parsed.char;
+                        if (parsed.alma) alma.value = parsed.alma;
+                        if (parsed.maxAlma) maxAlma.value = parsed.maxAlma;
+                        if (parsed.pi) pi.value = parsed.pi;
+                        if (parsed.pv) pv.value = parsed.pv;
+                        if (parsed.maxPV) maxPV.value = parsed.maxPV;
+                        if (parsed.attributes) attributes.value = parsed.attributes;
+                        if (parsed.bodyParts) bodyParts.value = parsed.bodyParts;
+                        if (parsed.skills) skills.value = parsed.skills;
+                        alert('Dados da ficha importados e atualizados!');
+                    } catch (err) {
+                        alert('Erro ao processar o arquivo JSON.');
+                    }
+                };
+                reader.readAsText(file);
+            };
+
+            onMounted(() => {
+                const localData = localStorage.getItem('origem_rpg_ficha');
+                if (localData) {
+                    try {
+                        const parsed = JSON.parse(localData);
+                        if (parsed.char) char.value = parsed.char;
+                        if (parsed.alma) alma.value = parsed.alma;
+                        if (parsed.maxAlma) maxAlma.value = parsed.maxAlma;
+                        if (parsed.pi) pi.value = parsed.pi;
+                        if (parsed.pv) pv.value = parsed.pv;
+                        if (parsed.maxPV) maxPV.value = parsed.maxPV;
+                        if (parsed.attributes) attributes.value = parsed.attributes;
+                        if (parsed.bodyParts) bodyParts.value = parsed.bodyParts;
+                        if (parsed.skills) skills.value = parsed.skills;
+                    } catch (e) {
+                        console.error("Falha ao recuperar dados salvos no navegador.");
+                    }
+                }
+            });
+
+            return {
+                char, showInfoModal, showConfigPanel, alma, maxAlma, pi, pp, maxPI, onSliderChange,
+                pv, maxPV, attributes, bodyParts, activePart, selectPart, getStatusText, getStatusColor,
+                getPartClass, passarTurno, skills, cycleSkill, getSkillBtnClass, manualSave, exportFicha, importFicha
+            };
+        }
+    }).mount('#app');
+</script>
+</body>
+</html>
