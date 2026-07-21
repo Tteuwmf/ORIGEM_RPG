@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ORIGEM - Ficha Digital v2.3</title>
+    <title>ORIGEM - Ficha Digital v2.4</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script>
@@ -345,13 +345,179 @@
             transition: box-shadow 450ms ease;
         }
 
+        /* v2.4 — barra compacta de Alma inspirada no painel de iniciativa */
+        .soul-balance-fields {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.55rem;
+        }
+
+        .soul-pole-field {
+            display: grid;
+            grid-template-columns: auto minmax(0, 1fr) auto;
+            align-items: center;
+            gap: 0.55rem;
+            min-width: 0;
+            padding: 0.55rem 0.65rem;
+            border: 1px solid rgba(87, 83, 78, 0.38);
+            border-radius: 0.55rem;
+            background: rgba(0, 0, 0, 0.28);
+        }
+
+        .soul-pole-icon {
+            width: 1.8rem;
+            height: 1.8rem;
+            flex: none;
+            overflow: hidden;
+            display: grid;
+            place-items: center;
+            border-radius: 0.4rem;
+            background: rgba(2, 2, 2, 0.78);
+        }
+
+        .soul-pole-copy {
+            min-width: 0;
+        }
+
+        .soul-pole-label {
+            display: block;
+            font-size: 0.62rem;
+            line-height: 1;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+
+        .soul-pole-input {
+            width: 3.1rem;
+            padding: 0.15rem 0.2rem;
+            border-bottom: 1px solid rgba(120, 113, 108, 0.5);
+            background: transparent;
+            outline: none;
+            text-align: right;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.05rem;
+            line-height: 1.1;
+            font-weight: 700;
+        }
+
+        .soul-pole-panic {
+            border-color: rgba(185, 28, 28, 0.38);
+            box-shadow: inset 0 0 22px rgba(122, 0, 16, 0.055);
+        }
+
+        .soul-pole-panic .soul-pole-icon {
+            color: #ef4444;
+            border: 1px solid rgba(185, 28, 28, 0.48);
+        }
+
+        .soul-pole-panic .soul-pole-label,
+        .soul-pole-panic .soul-pole-input {
+            color: #f87171;
+        }
+
+        .soul-pole-instinct {
+            border-color: rgba(126, 55, 170, 0.38);
+            box-shadow: inset 0 0 22px rgba(59, 29, 84, 0.075);
+        }
+
+        .soul-pole-instinct .soul-pole-icon {
+            color: #c084fc;
+            border: 1px solid rgba(126, 55, 170, 0.5);
+        }
+
+        .soul-pole-instinct .soul-pole-label,
+        .soul-pole-instinct .soul-pole-input {
+            color: #c084fc;
+        }
+
+        .soul-balance-control {
+            position: relative;
+            padding: 0.3rem 0;
+        }
+
+        .soul-balance-track {
+            position: relative;
+            height: 0.9rem;
+            overflow: visible;
+            border: 1px solid rgba(87, 83, 78, 0.72);
+            border-radius: 9999px;
+            background: #050505;
+            box-shadow:
+                inset 0 0 12px rgba(0, 0, 0, 0.9),
+                0 0 18px rgba(59, 29, 84, var(--mental-glow, 0.16));
+        }
+
+        .soul-balance-track::before {
+            content: '';
+            position: absolute;
+            inset: 2px;
+            border-radius: inherit;
+            background: linear-gradient(
+                90deg,
+                #7a0010 0%,
+                #b91c1c 42%,
+                #5b216f 58%,
+                #7e37aa 100%
+            );
+            opacity: 0.96;
+        }
+
+        .soul-balance-marker {
+            position: absolute;
+            z-index: 3;
+            top: 50%;
+            width: 1.15rem;
+            height: 1.15rem;
+            border-radius: 9999px;
+            transform: translate(-50%, -50%);
+            background: #f5f5f4;
+            border: 3px solid #5b216f;
+            box-shadow:
+                0 0 0 2px rgba(91, 33, 111, 0.3),
+                -5px 0 15px rgba(185, 28, 28, 0.28),
+                5px 0 15px rgba(126, 55, 170, 0.34);
+            transition: left 180ms ease;
+        }
+
+        .soul-balance-range {
+            position: absolute;
+            z-index: 4;
+            inset: -0.25rem 0;
+            width: 100%;
+            height: calc(100% + 0.5rem);
+            margin: 0;
+            opacity: 0;
+            cursor: ew-resize;
+            box-shadow: none !important;
+        }
+
+        .soul-balance-footnote {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            margin-top: 0.25rem;
+            color: #78716c;
+            font-size: 0.62rem;
+            line-height: 1.2;
+        }
+
+        .soul-balance-footnote .panic-side { color: rgba(248, 113, 113, 0.78); }
+        .soul-balance-footnote .instinct-side { color: rgba(192, 132, 252, 0.82); }
+
+        @media (max-width: 520px) {
+            .soul-balance-fields { grid-template-columns: 1fr; }
+            .soul-pole-field { padding: 0.5rem 0.6rem; }
+        }
+
         .vitality-panel::before {
             content: '';
             position: absolute;
             inset: -35%;
             z-index: 0;
             pointer-events: none;
-            background: radial-gradient(circle at 70% 50%, rgba(185, 28, 28, 0.78), transparent 35%);
+            background: radial-gradient(circle at 70% 50%, rgba(183, 32, 32, 0.78), transparent 35%);
             opacity: var(--vitality-danger, 0);
             filter: blur(16px);
             transition: opacity 600ms ease;
@@ -1000,7 +1166,7 @@
 
         <div class="flex items-center gap-3">
             <div class="text-right leading-tight">
-                <span class="text-xs text-stone-500 block">ORIGEM v2.3</span>
+                <span class="text-xs text-stone-500 block">ORIGEM v2.4</span>
                 <span class="text-[9px] uppercase tracking-wider"
                       :class="saveState === 'saving' ? 'text-amber-500' : 'text-emerald-700'">
                     {{ saveLabel }}
@@ -1130,30 +1296,42 @@
                         </div>
                     </div>
                     
-                    <div class="space-y-1 pl-2">
-                        <div class="flex justify-between text-xs font-mono text-purple-400">
-                            <span>PÂNICO (PP): {{ pp }}</span>
-                            <span>INSTINTO (PI): {{ pi }}</span>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <label class="shrink-0 cursor-pointer" title="Carregar imagem de Pânico">
-                                <input type="file" accept="image/*" class="sr-only" @change="handleImageUpload($event, 'panicIcon')">
-                                <span class="w-7 h-7 rounded-md overflow-hidden border border-stone-800 bg-stone-950 flex items-center justify-center text-purple-500">
+                    <div class="space-y-3 pl-2">
+                        <div class="soul-balance-fields">
+                            <label class="soul-pole-field soul-pole-panic" title="Pânico atual">
+                                <span class="soul-pole-icon">
                                     <img v-if="assets.panicIcon" :src="assets.panicIcon" alt="Pânico" class="w-full h-full object-contain p-1">
                                     <span v-else>☽</span>
                                 </span>
+                                <span class="soul-pole-copy">
+                                    <span class="soul-pole-label">Pânico (PP)</span>
+                                </span>
+                                <input type="number" min="0" max="10" :value="pp" @input="onPanicChange" class="soul-pole-input" aria-label="Pontos de Pânico">
                             </label>
-                            <input type="range" min="0" :max="10" :value="pi" @input="onSliderChange" class="w-full accent-mentalPurple bg-stone-950 h-2 rounded outline-none appearance-none">
-                            <label class="shrink-0 cursor-pointer" title="Carregar imagem de Instinto">
-                                <input type="file" accept="image/*" class="sr-only" @change="handleImageUpload($event, 'instinctIcon')">
-                                <span class="w-7 h-7 rounded-md overflow-hidden border border-stone-800 bg-stone-950 flex items-center justify-center text-orange-500">
+
+                            <label class="soul-pole-field soul-pole-instinct" title="Instinto atual">
+                                <span class="soul-pole-icon">
                                     <img v-if="assets.instinctIcon" :src="assets.instinctIcon" alt="Instinto" class="w-full h-full object-contain p-1">
                                     <span v-else>☼</span>
                                 </span>
+                                <span class="soul-pole-copy">
+                                    <span class="soul-pole-label">Instinto (PI)</span>
+                                </span>
+                                <input type="number" min="0" :max="maxPI" :value="pi" @input="onInstinctChange" class="soul-pole-input" aria-label="Pontos de Instinto">
                             </label>
                         </div>
-                        <div class="text-[10px] text-stone-500 italic text-center">
-                            Máximo de Instinto permitido por sua Alma atual: {{ maxPI }}
+
+                        <div class="soul-balance-control" title="Arraste para alterar Pânico e Instinto">
+                            <div class="soul-balance-track">
+                                <div class="soul-balance-marker" :style="{ left: `${pi * 10}%` }"></div>
+                            </div>
+                            <input type="range" min="0" max="10" step="1" :value="pi" @input="onSliderChange" class="soul-balance-range" aria-label="Alterar Instinto; o Pânico é ajustado automaticamente">
+                        </div>
+
+                        <div class="soul-balance-footnote">
+                            <span class="panic-side">☽ Pânico</span>
+                            <span>Máximo de Instinto: {{ maxPI }}</span>
+                            <span class="instinct-side">Instinto ☼</span>
                         </div>
                     </div>
                 </div>
@@ -1550,7 +1728,7 @@
     createApp({
         setup() {
             const STORAGE_KEY = 'origem_rpg_ficha';
-            const DATA_VERSION = 10;
+            const DATA_VERSION = 11;
 
             const clamp = (value, min, max) => Math.min(max, Math.max(min, Number(value) || 0));
             const hasOwn = (object, key) => Object.prototype.hasOwnProperty.call(object, key);
@@ -2019,8 +2197,23 @@
                 });
             }, { deep: true });
 
+            const setInstinctValue = (value) => {
+                const parsed = Number.parseInt(value, 10);
+                pi.value = clamp(Number.isFinite(parsed) ? parsed : 0, 0, maxPI.value);
+            };
+
             const onSliderChange = (event) => {
-                pi.value = clamp(parseInt(event.target.value, 10), 0, maxPI.value);
+                setInstinctValue(event.target.value);
+            };
+
+            const onInstinctChange = (event) => {
+                setInstinctValue(event.target.value);
+            };
+
+            const onPanicChange = (event) => {
+                const parsed = Number.parseInt(event.target.value, 10);
+                const panicValue = clamp(Number.isFinite(parsed) ? parsed : 0, 0, 10);
+                setInstinctValue(10 - panicValue);
             };
 
             const selectPart = (key) => {
@@ -2409,6 +2602,8 @@
                 mentalGlow,
                 maxPI,
                 onSliderChange,
+                onInstinctChange,
+                onPanicChange,
                 pv,
                 maxPV,
                 pvPercent,
